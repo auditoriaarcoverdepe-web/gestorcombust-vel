@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+  <h3>Aditivos do Contrato {{ contrato.numero_contrato }}/{{ contrato.ano_contrato }}</h3>
+  <a href="{{ url_for('novo_aditivo', contrato_id=contrato.id) }}" class="btn btn-primary mb-3">Novo Aditivo</a>
+  <table class="table table-bordered table-striped">
+    <thead>
+      <tr>
+        <th>Tipo</th>
+        <th>Descrição</th>
+        <th>Data</th>
+        <th>Novo Valor Total</th>
+        <th>Nova Quantidade</th>
+        <th>Nova Data Fim</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for aditivo in aditivos %}
+      <tr>
+        <td>{{ aditivo.tipo_aditivo }}</td>
+        <td>{{ aditivo.descricao }}</td>
+        <td>{{ aditivo.data_aditivo.strftime('%d/%m/%Y') if aditivo.data_aditivo else '' }}</td>
+        <td>{{ aditivo.novo_valor_total or '' }}</td>
+        <td>{{ aditivo.nova_quantidade_total or '' }}</td>
+        <td>{{ aditivo.nova_data_fim.strftime('%d/%m/%Y') if aditivo.nova_data_fim else '' }}</td>
+        <td>
+          <a href="{{ url_for('editar_aditivo', contrato_id=contrato.id, aditivo_id=aditivo.id) }}" class="btn btn-sm btn-warning">Editar</a>
+          <form method="post" action="{{ url_for('excluir_aditivo', contrato_id=contrato.id, aditivo_id=aditivo.id) }}" style="display:inline;">
+            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Excluir este aditivo?')">Excluir</button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="7" class="text-center">Nenhum aditivo cadastrado.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <a href="{{ url_for('contratos_combustivel') }}" class="btn btn-secondary">Voltar</a>
+</div>
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+  <div class="col-lg-9 col-md-10">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <h3 class="mb-4"><i class="fas fa-user-plus me-2"></i>Novo Usuário</h3>
+
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                      {% if messages %}
+                        <div class="mb-3">
+                          {% for category, message in messages %}
+                            <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show" role="alert">
+                              {{ message }}
+                              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+                            </div>
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                    {% endwith %}
+
+                    <form method="post" class="needs-validation" novalidate>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="nome" class="form-label">Nome <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="nome" name="nome" required>
+                                <div class="invalid-feedback">Informe o nome.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="email" class="form-label">E-mail <span class="text-danger">*</span></label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                                <div class="invalid-feedback">Informe um e-mail válido.</div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="senha" class="form-label">Senha <span class="text-danger">*</span></label>
+                                <input type="password" class="form-control" id="senha" name="senha" required>
+                                <div class="invalid-feedback">Informe a senha.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="tipo" class="form-label">Tipo de Usuário <span class="text-danger">*</span></label>
+                                <select class="form-select" id="tipo" name="tipo" required onchange="document.getElementById('setor-div').style.display = this.value === 'departamento' ? 'block' : 'none';">
+                                    <option value="admin">Administrador</option>
+                                    <option value="departamento">Departamento</option>
+                                </select>
+                                <div class="invalid-feedback">Selecione o tipo de usuário.</div>
+                            </div>
+                        </div>
+                        <div class="mb-3" id="setor-div" style="display:none;">
+                            <label for="setor" class="form-label">Setor</label>
+                            <input type="text" class="form-control" id="setor" name="setor">
+                        </div>
+                        <div class="d-flex justify-content-end gap-2 mt-4">
+                            <button type="submit" class="btn btn-success px-4">
+                                <i class="fas fa-save me-1"></i>Salvar
+                            </button>
+                            <a href="{{ url_for('usuarios') }}" class="btn btn-secondary px-4">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    // Validação visual Bootstrap
+    (function () {
+      'use strict';
+      var forms = document.querySelectorAll('.needs-validation');
+      Array.prototype.slice.call(forms).forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+          if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+          form.classList.add('was-validated');
+        }, false);
+      });
+    })();
+</script>
+{% endblock %}

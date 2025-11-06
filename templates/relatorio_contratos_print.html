@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualização para Impressão - Relatório de Abastecimentos</title>
+    <style>
+        /* Reset AGGRESSIVO para impressão */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0 !important;
+            padding: 5px 15px !important;
+            font-size: 11pt;
+            color: #000;
+            background: white;
+            min-height: 100vh;
+        }
+
+        /* Controles de Impressão - VISUAL APENAS */
+        .print-controls {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .btn-imprimir {
+            background: #0b5ed7;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-voltar {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        /* Cabeçalho ULTRA COMPACTO */
+        .relatorio-header {
+            border-bottom: 2px solid #0b5ed7;
+            padding-bottom: 5px;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        .relatorio-titulo {
+            color: #0b5ed7;
+            font-size: 18px;
+            margin: 2px 0;
+            font-weight: 600;
+        }
+        .relatorio-subtitulo {
+            color: #6c757d;
+            font-size: 12px;
+            margin: 1px 0;
+        }
+        .relatorio-info {
+            font-size: 9pt;
+            color: #6c757d;
+            margin: 1px 0;
+        }
+        .filtros-info {
+            font-size: 9pt;
+            color: #6c757d;
+            margin: 3px auto;
+            text-align: left;
+            max-width: 800px;
+        }
+
+        /* Tabela COMPACTA */
+        .tabela-container {
+            margin-top: 5px;
+        }
+        .tabela-dados {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+        .tabela-dados th,
+        .tabela-dados td {
+            border: 1px solid #ddd;
+            padding: 4px;
+            text-align: left;
+        }
+        .tabela-dados th {
+            background-color: #0b5ed7;
+            color: white;
+            font-weight: 600;
+            text-align: center;
+        }
+        .tabela-dados tbody tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        .tabela-dados .text-right {
+            text-align: right;
+        }
+        .linha-total {
+            font-weight: bold;
+            background-color: #f0f3f8 !important;
+        }
+
+        /* Rodapé COMPACTO */
+        .footer {
+            margin-top: 10px;
+            text-align: center;
+            font-size: 8pt;
+            color: #6c757d;
+            border-top: 1px solid #ccc;
+            padding-top: 3px;
+        }
+
+        /* ESTILOS DE IMPRESSÃO CRÍTICOS */
+        @media print {
+            @page {
+                margin: 0.5cm !important; /* Margem MÍNIMA da página */
+                size: portrait;
+            }
+            
+            body {
+                margin: 0 !important;
+                padding: 0 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            .print-controls {
+                display: none !important;
+            }
+            
+            /* CABEÇALHO DE IMPRESSÃO SUPER COMPACTO */
+            .relatorio-header {
+                border-bottom: 2px solid #0b5ed7;
+                padding-bottom: 3px !important;
+                margin-bottom: 5px !important;
+                margin-top: 0 !important;
+            }
+            .relatorio-titulo {
+                font-size: 16px !important;
+                margin: 1px 0 !important;
+            }
+            .relatorio-subtitulo {
+                font-size: 10px !important;
+                margin: 0 !important;
+            }
+            .relatorio-info, .filtros-info {
+                font-size: 8pt !important;
+                margin: 0 !important;
+            }
+            
+            /* TABELA DE IMPRESSÃO ULTRA COMPACTA */
+            .tabela-container {
+                margin-top: 2px !important;
+            }
+            .tabela-dados {
+                font-size: 0.75rem !important;
+            }
+            .tabela-dados th,
+            .tabela-dados td {
+                padding: 2px 3px !important;
+                line-height: 1.1 !important;
+            }
+            
+            /* RODAPÉ DE IMPRESSÃO */
+            .footer {
+                font-size: 7pt !important;
+                padding-top: 2px !important;
+                margin-top: 5px !important;
+            }
+        }
+
+        /* Garantir que não haja quebras desnecessárias */
+        .relatorio-header, .tabela-container {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+        
+        tr {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+    </style>
+</head>
+<body>
+    <!-- Controles de Impressão -->
+    <div class="print-controls">
+        <button class="btn-imprimir" onclick="window.print()">
+            <i class="fas fa-print"></i> Imprimir
+        </button>
+        <a href="{{ url_for('relario_abastecimentos') }}{% if request.query_string %}?{{ request.query_string.decode() }}{% endif %}" 
+           class="btn-voltar">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+    </div>
+
+    <!-- Cabeçalho do Relatório -->
+    <div class="relatorio-header">
+        <h2 class="relatorio-titulo">Relatório de Abastecimentos</h2>
+        <p class="relatorio-subtitulo">Detalhamento de todos os abastecimentos registrados</p>
+        
+        <div class="filtros-info">
+            {% if filtros_aplicados %}
+                <strong>Filtros aplicados:</strong><br>
+                {% for chave, valor in filtros_aplicados.items() %}
+                    • {{ {
+                        'data_inicio': 'Data Início',
+                        'data_fim': 'Data Fim',
+                        'veiculo_id': 'Veículo',
+                        'motorista_id': 'Motorista',
+                        'combustivel': 'Combustível',
+                        'min_litros': 'Mínimo de Litros',
+                        'max_litros': 'Máximo de Litros'
+                    }.get(chave, chave.replace('_', ' ').title()) }}: {{ valor }}<br>
+                {% endfor %}
+            {% else %}
+                <strong>Relatório geral:</strong> Todos os abastecimentos cadastrados no sistema.
+            {% endif %}
+        </div>
+        
+        <p class="relatorio-info">Gerado em: {{ agora.strftime('%d/%m/%Y %H:%M') }}</p>
+        <p class="relatorio-info">Total de registros: {{ total_registros }}</p>
+    </div>
+
+    <!-- Tabela de Dados -->
+    <div class="tabela-container">
+        <table class="tabela-dados">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Veículo</th>
+                    <th>Motorista</th>
+                    <th>Combustível</th>
+                    <th>Nº Nota</th>
+                    <th>Hodômetro</th>
+                    <th class="text-right">Litros</th>
+                    <th class="text-right">Valor Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if dados %}
+                {% set total_litros = namespace(value=0) %}
+                {% set total_valor = namespace(value=0) %}
+                {% for abastecimento in dados %}
+                {% set total_litros.value = total_litros.value + abastecimento.litros %}
+                {% set total_valor.value = total_valor.value + abastecimento.valor_total %}
+                <tr>
+                    <td>{{ abastecimento.data.strftime('%d/%m/%Y') }}</td>
+                    <td>{{ abastecimento.veiculo.placa if abastecimento.veiculo else 'N/A' }}</td>
+                    <td>{{ abastecimento.motorista.nome_completo if abastecimento.motorista else 'N/A' }}</td>
+                    <td>{{ abastecimento.veiculo.combustivel if abastecimento.veiculo else 'N/A' }}</td>
+                    <td>{{ abastecimento.numero_nota }}</td>
+                    <td>{{ abastecimento.hodometro|number(0) }} km</td>
+                    <td class="text-right">{{ abastecimento.litros|litros }}</td>
+                    <td class="text-right">{{ abastecimento.valor_total|currency }}</td>
+                </tr>
+                {% endfor %}
+                <tr class="linha-total">
+                    <td colspan="6" class="text-right">Total:</td>
+                    <td class="text-right">{{ total_litros.value|litros }}</td>
+                    <td class="text-right">{{ total_valor.value|currency }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="text-center">
+                        Nenhum abastecimento encontrado com os filtros aplicados.
+                    </td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Rodapé -->
+    <div class="footer">
+        Relatório gerado automaticamente pelo Sistema de Gestão de Combustíveis.
+    </div>
+
+    <script>
+        // Forçar impressão com configurações otimizadas
+        function imprimirOtimizado() {
+            // Adicionar uma classe de impressão imediatamente antes de imprimir
+            document.body.classList.add('printing');
+            window.print();
+            setTimeout(() => {
+                document.body.classList.remove('printing');
+            }, 100);
+        }
+        
+        // Substituir o evento de impressão padrão
+        document.querySelector('.btn-imprimir').onclick = imprimirOtimizado;
+    </script>
+</body>
+</html>

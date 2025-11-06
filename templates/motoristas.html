@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block title %}Motoristas{% endblock %}
+{% block page_title %}Motoristas{% endblock %}
+
+{% block head_extra %}
+  {{ super() }}
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome para ícones -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Estilos customizados para consistência com dashboard.html */
+    .card-custom {
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      margin-bottom: 2rem;
+    }
+    .form-label {
+      font-weight: 500;
+    }
+    .btn-primary-custom {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      border-radius: 25px;
+      padding: 0.75rem 2rem;
+      color: white;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+    .btn-primary-custom:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+      color: white;
+    }
+    .table-responsive-custom {
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    }
+    .table-custom thead {
+      background-color: #667eea;
+      color: white;
+    }
+    .table-custom tbody tr:hover {
+      background-color: #f5f5f5;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="card card-custom">
+    <div class="card-header bg-white pt-4 pb-3 d-flex justify-content-between align-items-center">
+      <h5 class="card-title mb-0"><i class="fas fa-users me-2"></i>Motoristas Cadastrados ({{ items|length }} registros)</h5>
+      <div>
+        {% if session['usuario_tipo'] == 'admin' and setores %}
+        <form method="get" class="d-inline me-3">
+          <label for="setor" class="form-label me-2 mb-0">Filtrar por setor:</label>
+          <select name="setor" id="setor" class="form-select form-select-sm d-inline" onchange="this.form.submit()">
+            <option value="">Todos os setores</option>
+            {% for setor in setores %}
+              <option value="{{ setor }}" {% if request.args.get('setor') == setor %}selected{% endif %}>{{ setor }}</option>
+            {% endfor %}
+          </select>
+          {% for key, value in request.args.items() %}
+            {% if key != 'setor' %}
+              <input type="hidden" name="{{ key }}" value="{{ value }}">
+            {% endif %}
+          {% endfor %}
+        </form>
+        {% endif %}
+        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalAdicionarMotorista">
+          <i class="fas fa-plus me-1"></i> Adicionar Motorista
+        </button>
+        {% if items %}
+        <span class="badge bg-primary rounded-pill ms-2">{{ items|length }}</span>
+        {% endif %}
+        <a href="{{ url_for('visualizar_motoristas') }}" class="btn btn-sm btn-success ms-2">
+          <i class="fas fa-file-pdf me-1"></i> Exportar/Imprimir
+        </a>
+      </div>
+    </div>
+    <div class="card-body p-0">
+      {% if items %}
+        <div class="table-responsive table-responsive-custom">
+          <table class="table table-striped table-hover mb-0 table-custom">
+            <thead>
+              <tr>
+                <th scope="col">Nome</th>
+                <th scope="col">Documento</th>
+                <th scope="col">Observações</th>
+                <th scope="col">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in items %}
+              <tr>
+                <td><strong>{{ item.nome_completo }}</strong></td>
+                <td>{{ item.documento }}</td>
+                <td>{{ item.observacoes or '—' }}</td>
+                <td>
+                  <a href="{{ url_for("editar_motorista", motorista_id=item.id) }}" class="btn btn-sm btn-outline-primary me-1" title="Editar">
+                    <i class="fas fa-edit"></i>
+                  </a>
+                  <form method="post" action="{{ url_for("excluir_motorista", motorista_id=item.id) }}" class="d-inline" onsubmit="return confirm('Tem certeza que deseja excluir este motorista?');">
+                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Excluir">
+                      <i class="fas fa-trash-alt"></i>
+                    </button>
+                  </form>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="text-center py-5">
+          <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+          <h5 class="text-muted">Nenhum motorista cadastrado.</h5>
+          <p class="text-muted">Comece adicionando um novo motorista usando o botão acima.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Modal para adicionar motorista -->
+  <div class="modal fade" id="modalAdicionarMotorista" tabindex="-1" aria-labelledby="modalAdicionarMotoristaLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalAdicionarMotoristaLabel"><i class="fas fa-user-plus me-2"></i>Cadastro de Motorista</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <form method="post" novalidate>
+          <div class="modal-body">
+            <div class="row mb-3">
+              <div class="col-md-5">
+                <label for="full_name" class="form-label">Nome Completo</label>
+                <input type="text" class="form-control" id="full_name" name="full_name" placeholder="Ex: Carlos Silva" required>
+              </div>
+              <div class="col-md-4">
+                <label for="document" class="form-label">Documento (CNH/CPF)</label>
+                <input type="text" class="form-control" id="document" name="document" placeholder="Ex: 123.456.789-00" required>
+              </div>
+              {% if setores %}
+              <div class="col-md-3">
+                <label for="setor" class="form-label">Setor/Departamento</label>
+                <select class="form-select" id="setor" name="setor" required>
+                  <option value="">Selecione o setor</option>
+                  {% for setor in setores %}
+                    <option value="{{ setor }}">{{ setor }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              {% endif %}
+            </div>
+            <div class="mb-4">
+              <label for="observations" class="form-label">Observações (opcional)</label>
+              <textarea class="form-control" id="observations" name="observations" rows="3" placeholder="Ex: Motorista experiente, habilitação categoria D"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary-custom">
+              <i class="fas fa-save me-2"></i>Salvar Motorista
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <!-- Bootstrap JS Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}

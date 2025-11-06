@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Editar Usuário</h2>
+    <form method="post">
+        <div class="mb-3">
+            <label for="nome" class="form-label">Nome</label>
+            <input type="text" class="form-control" id="nome" name="nome" value="{{ usuario.nome }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="email" class="form-label">E-mail</label>
+            <input type="email" class="form-control" id="email" name="email" value="{{ usuario.email }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="senha" class="form-label">Nova Senha</label>
+            <input type="password" class="form-control" id="senha" name="senha" placeholder="Deixe em branco para não alterar">
+        </div>
+        <div class="mb-3">
+            <label for="tipo" class="form-label">Tipo de Usuário</label>
+            <select class="form-select" id="tipo" name="tipo" required onchange="document.getElementById('setor-div').style.display = this.value === 'departamento' ? 'block' : 'none';">
+                <option value="admin" {% if usuario.tipo == 'admin' %}selected{% endif %}>Administrador</option>
+                <option value="departamento" {% if usuario.tipo == 'departamento' %}selected{% endif %}>Departamento</option>
+            </select>
+        </div>
+        <div class="mb-3" id="setor-div" style="display:{{ 'block' if usuario.tipo == 'departamento' else 'none' }};">
+            <label for="setor" class="form-label">Setor</label>
+            <input type="text" class="form-control" id="setor" name="setor" value="{{ usuario.setor or '' }}">
+        </div>
+        <button type="submit" class="btn btn-success">Salvar</button>
+        <a href="{{ url_for('usuarios') }}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

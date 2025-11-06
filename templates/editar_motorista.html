@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Motorista{% endblock %}
+{% block page_title %}Editar Motorista{% endblock %}
+
+{% block head_extra %}
+  {{ super() }}
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome para ícones -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Estilos customizados para consistência com dashboard.html */
+    .card-custom {
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      margin-bottom: 2rem;
+    }
+    .form-label {
+      font-weight: 500;
+    }
+    .btn-primary-custom {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      border-radius: 25px;
+      padding: 0.75rem 2rem;
+      color: white;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+    .btn-primary-custom:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+      color: white;
+    }
+    .btn-secondary-custom {
+      background-color: #6c757d;
+      border: none;
+      border-radius: 25px;
+      padding: 0.75rem 2rem;
+      color: white;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+    .btn-secondary-custom:hover {
+      background-color: #5a6268;
+      transform: translateY(-2px);
+      color: white;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="card card-custom">
+    <div class="card-header bg-white pt-4 pb-3">
+      <h5 class="card-title mb-0"><i class="fas fa-user-edit me-2"></i>Editar Motorista</h5>
+    </div>
+    <div class="card-body">
+      <form method="post">
+        <div class="mb-3">
+          <label for="full_name" class="form-label">Nome Completo</label>
+          <input type="text" class="form-control" id="full_name" name="full_name" 
+                 value="{{ motorista.nome_completo }}" required>
+        </div>
+        <div class="mb-3">
+          <label for="document" class="form-label">Documento (CPF/RG)</label>
+          <input type="text" class="form-control" id="document" name="document" 
+                 value="{{ motorista.documento }}" required>
+        </div>
+        {% if setores %}
+        <div class="mb-3">
+          <label for="setor" class="form-label">Setor/Departamento</label>
+          <select class="form-select" id="setor" name="setor" required>
+            <option value="">Selecione o setor</option>
+            {% for setor in setores %}
+              <option value="{{ setor }}" {% if motorista.setor == setor %}selected{% endif %}>{{ setor }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        {% endif %}
+        <div class="mb-4">
+          <label for="observations" class="form-label">Observações (opcional)</label>
+          <textarea class="form-control" id="observations" name="observations" rows="3">{{ motorista.observacoes or '' }}</textarea>
+        </div>
+        
+        <button type="submit" class="btn btn-primary-custom me-2">
+          <i class="fas fa-save me-2"></i>Salvar Alterações
+        </button>
+        <a href="{{ url_for("motoristas") }}" class="btn btn-secondary-custom">
+          <i class="fas fa-times-circle me-2"></i>Cancelar
+        </a>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <!-- Bootstrap JS Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}
+

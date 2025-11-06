@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visualização para Impressão - Relatório por Veículo</title>
+  <style>
+    /* Reset básico */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 20px;
+      font-size: 11pt;
+      color: #000;
+      background: white;
+      min-height: 100vh;
+    }
+    
+    .container {
+      width: 100%;
+      max-width: none;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
+    
+    /* Cabeçalho do Relatório */
+    .relatorio-header {
+      border-bottom: 2px solid #0b5ed7;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      page-break-after: avoid;
+    }
+    
+    .relatorio-titulo {
+      color: #0b5ed7;
+      font-size: 24px;
+      margin: 10px 0;
+      font-weight: 600;
+    }
+    
+    .relatorio-subtitulo {
+      color: #6c757d;
+      font-size: 16px;
+      margin: 5px 0;
+    }
+    
+    .relatorio-info {
+      font-size: 10pt;
+      color: #6c757d;
+      margin: 2px 0;
+    }
+    
+    /* Controles de Impressão */
+    .print-controls {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      border: 1px solid #e9ecef;
+      margin-bottom: 20px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .btn-imprimir {
+      background: #0b5ed7;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+    
+    .btn-imprimir:hover {
+      background: #094ba7;
+      transform: translateY(-1px);
+    }
+    
+    .btn-voltar {
+      background: #6c757d;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+    
+    .btn-voltar:hover {
+      background: #5a6268;
+      transform: translateY(-1px);
+    }
+    
+    /* Cards de Veículo */
+    .relatorio-container {
+      min-height: 100vh;
+      page-break-inside: avoid;
+    }
+    
+    .veiculo-card {
+      border: 1px solid #000;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    
+    .veiculo-header {
+      border-bottom: 1px solid #000;
+      margin-bottom: 10px;
+      padding: 10px;
+    }
+    
+    .veiculo-placa {
+      font-size: 18pt;
+      font-weight: bold;
+    }
+    
+    .veiculo-tipo {
+      font-size: 10pt;
+      margin-top: 4px;
+    }
+    
+    .veiculo-combustivel {
+      background: #f0f3f8;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 9pt;
+      font-weight: 500;
+    }
+    
+    /* Métricas */
+    .metrica-card {
+      border: 1px solid #000;
+      border-radius: 8px;
+      padding: 12px;
+      margin: 10px;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    
+    .metrica-label {
+      font-size: 10pt;
+      color: #6c757d;
+      margin-bottom: 5px;
+    }
+    
+    .metrica-value {
+      font-size: 16pt;
+      font-weight: bold;
+    }
+    
+    /* Lista de Abastecimentos */
+    .abastecimentos-lista {
+      padding: 0 10px 10px;
+    }
+    
+    .abastecimentos-lista h6 {
+      font-size: 11pt;
+      font-weight: bold;
+      margin: 10px 0 8px;
+      color: #000;
+    }
+    
+    .abastecimento-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      border-bottom: 1px solid #000;
+      page-break-inside: avoid;
+    }
+    
+    .abastecimento-data {
+      font-weight: bold;
+      width: 30%;
+    }
+    
+    .abastecimento-litros {
+      font-weight: bold;
+      width: 30%;
+      text-align: center;
+    }
+    
+    .abastecimento-valor {
+      font-weight: bold;
+      width: 40%;
+      text-align: right;
+    }
+    
+    /* Totais Gerais */
+    .totais-gerais {
+      border: 2px solid #000;
+      border-radius: 8px;
+      margin: 20px 0;
+      page-break-inside: avoid;
+    }
+    
+    .totais-header {
+      background: #f0f3f8;
+      padding: 10px;
+      border-bottom: 2px solid #000;
+      text-align: center;
+    }
+    
+    .totais-header h5 {
+      font-size: 14pt;
+      margin: 0;
+      color: #000;
+    }
+    
+    .totais-content {
+      display: flex;
+      padding: 15px;
+    }
+    
+    .totais-col {
+      flex: 1;
+      text-align: center;
+    }
+    
+    .totais-col h6 {
+      font-size: 12pt;
+      color: #6c757d;
+      margin-bottom: 8px;
+    }
+    
+    .totais-col .metrica-value {
+      font-size: 14pt;
+    }
+    
+    /* Rodapé */
+    .footer {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      right: 20px;
+      text-align: center;
+      font-size: 9pt;
+      color: #6c757d;
+      border-top: 1px solid #ccc;
+      padding-top: 10px;
+    }
+    
+    /* Estilos para impressão */
+    @media print {
+      .print-controls {
+        display: none !important;
+      }
+      
+      body {
+        margin: 0;
+        padding: 20px;
+      }
+      
+      .container {
+        margin: 0;
+        padding: 0;
+      }
+      
+      .footer {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        right: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Controles de Impressão -->
+  <div class="print-controls">
+    <button class="btn-imprimir" onclick="window.print()">
+      <i class="fas fa-print"></i> Imprimir
+    </button>
+    <a href="{{ url_for('relatorio_veiculos') }}" class="btn-voltar">
+      <i class="fas fa-arrow-left"></i> Voltar
+    </a>
+  </div>
+
+  <!-- Cabeçalho do Relatório -->
+  <div class="relatorio-container">
+    <div class="relatorio-header">
+      <h2 class="relatorio-titulo">Relatório por Veículo</h2>
+      <p class="relatorio-subtitulo">Detalhamento de consumo por veículo</p>
+      
+      <!-- Informações de Geração -->
+      <div class="relatorio-info">
+        <strong>Data de Geração:</strong> {{ agora.strftime('%d/%m/%Y %H:%M') }}
+      </div>
+      {% if filtros_aplicados %}
+        <div class="relatorio-info">
+          <strong>Filtros Aplicados:</strong>
+          {% for chave, valor in filtros_aplicados.items() if valor %}
+            {{ {
+              'data_inicio': 'Data Início',
+              'data_fim': 'Data Fim',
+              'veiculo_id': 'Veículo',
+              'combustivel': 'Combustível'
+            }.get(chave, chave.replace('_', ' ').title()) }}: {{ valor }}{% if not loop.last %}, {% endif %}
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Dados por Veículo -->
+    {% if dados_veiculos %}
+      {% set total_litros_geral = namespace(value=0) %}
+      {% set total_valor_geral = namespace(value=0) %}
+      
+      {% for veiculo, dados in dados_veiculos.items() %}
+        <div class="veiculo-card">
+          <div class="veiculo-header">
+            <div>
+              <div class="veiculo-placa">{{ veiculo.placa }}</div>
+              <div class="veiculo-tipo">{{ veiculo.tipo }} - {{ veiculo.combustivel }}</div>
+            </div>
+            <div class="veiculo-combustivel">{{ veiculo.combustivel }}</div>
+          </div>
+          
+          <!-- Métricas do Veículo -->
+          <div style="display: flex; flex-wrap: wrap;">
+            <div class="metrica-card" style="flex: 1; min-width: 200px;">
+              <div class="metrica-label">Total de Litros</div>
+              <div class="metrica-value">{{ "%.1f"|format(dados.total_litros) }} L</div>
+            </div>
+            <div class="metrica-card" style="flex: 1; min-width: 200px;">
+              <div class="metrica-label">Valor Total</div>
+              <div class="metrica-value">R$ {{ "%.2f"|format(dados.total_valor) }}</div>
+            </div>
+            <div class="metrica-card" style="flex: 1; min-width: 200px;">
+              <div class="metrica-label">Média por Abastecimento</div>
+              <div class="metrica-value">{{ "%.1f"|format(dados.media_litros) }} L</div>
+            </div>
+            <div class="metrica-card" style="flex: 1; min-width: 200px;">
+              <div class="metrica-label">Abastecimentos</div>
+              <div class="metrica-value">{{ dados.total_abastecimentos }}</div>
+            </div>
+          </div>
+          
+          <!-- Lista de Abastecimentos -->
+          <div class="abastecimentos-lista">
+            <h6>Últimos Abastecimentos</h6>
+            <div class="abastecimentos-lista">
+              {% for abastecimento in dados.abastecimentos %}
+                <div class="abastecimento-item">
+                  <span class="abastecimento-data">{{ abastecimento.data.strftime('%d/%m/%Y') }}</span>
+                  <span class="abastecimento-litros">{{ "%.1f"|format(abastecimento.litros) }} L</span>
+                  <span class="abastecimento-valor">R$ {{ "%.2f"|format(abastecimento.valor_total) }}</span>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        
+        {% set total_litros_geral.value = total_litros_geral.value + dados.total_litros %}
+        {% set total_valor_geral.value = total_valor_geral.value + dados.total_valor %}
+      {% endfor %}
+      
+      <!-- Totais Gerais -->
+      <div class="totais-gerais">
+        <div class="totais-header">
+          <h5>Totais Gerais</h5>
+        </div>
+        <div class="totais-content">
+          <div class="totais-col">
+            <h6>Total de Veículos</h6>
+            <div class="metrica-value">{{ dados_veiculos|length }}</div>
+          </div>
+          <div class="totais-col">
+            <h6>Litros Totais</h6>
+            <div class="metrica-value">{{ "%.1f"|format(total_litros_geral.value) }} L</div>
+          </div>
+          <div class="totais-col">
+            <h6>Valor Total</h6>
+            <div class="metrica-value">R$ {{ "%.2f"|format(total_valor_geral.value) }}</div>
+          </div>
+          <div class="totais-col">
+            <h6>Média por Veículo</h6>
+            <div class="metrica-value">R$ {{ "%.2f"|format(total_valor_geral.value / dados_veiculos|length) }}</div>
+          </div>
+        </div>
+      </div>
+    {% else %}
+      <div class="text-center py-5">
+        <h5>Nenhum registro encontrado para os critérios selecionados.</h5>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Rodapé para impressão -->
+  <div class="footer">
+    <p>Relatório gerado automaticamente pelo Sistema de Gestão de Combustível</p>
+    <p>Página <span class="page"></span></p>
+  </div>
+
+  <!-- Script para números de página -->
+  <script>
+    // Adiciona números de página
+    window.addEventListener('load', function() {
+      const pageSpans = document.querySelectorAll('.page');
+      pageSpans.forEach(span => {
+        span.textContent = window.location.href.split('#')[1] || '1';
+      });
+    });
+  </script>
+</body>
+</html>

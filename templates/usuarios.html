@@ -1,0 +1,34 @@
+    <a href="{{ url_for('criar_usuario') }}" class="btn btn-primary mb-3">Novo Usuário</a>
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Usuários do Sistema</h2>
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Tipo</th>
+                <th>Setor</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for usuario in usuarios %}
+            <tr>
+                <td>{{ usuario.nome }}</td>
+                <td>{{ usuario.email }}</td>
+                <td>{{ 'Administrador' if usuario.tipo == 'admin' else 'Departamento' }}</td>
+                <td>{{ usuario.setor or '-' }}</td>
+                <td>
+                    <a href="{{ url_for('editar_usuario', user_id=usuario.id) }}" class="btn btn-sm btn-warning">Editar</a>
+                    <form action="{{ url_for('excluir_usuario', user_id=usuario.id) }}" method="post" style="display:inline;">
+                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir este usuário?');">Excluir</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

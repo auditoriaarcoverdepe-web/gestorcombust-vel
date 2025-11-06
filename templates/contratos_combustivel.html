@@ -1,0 +1,411 @@
+
+  {% if filtros_aplicados %}
+    <div class="filter-badges mb-3">
+      {% for chave, valor in filtros_aplicados.items() if valor %}
+        <div class="badge-filter">
+          <strong>{{ {'setor': 'Setor'}.get(chave, chave.replace('_', ' ').title()) }}:</strong>
+          {{ valor }}
+          <a href="#" class="remove" onclick="const url = new URL(window.location.href); url.searchParams.delete('{{ chave }}'); window.location.href = url.toString(); return false;">×</a>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% extends "base.html" %}
+{% block title %}Contratos de Combustível{% endblock %}
+{% block page_title %}Contratos de Combustível{% endblock %}
+
+{% block head_extra %}
+  {{ super() }}
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    /* Estilos customizados */
+    .card-custom {
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      margin-bottom: 2rem;
+    }
+    .progress-custom {
+      height: 20px;
+      border-radius: 10px;
+    }
+    .table-responsive-custom {
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    }
+    .table-custom thead {
+      background-color: #667eea;
+      color: white;
+    }
+    .table-custom tbody tr:hover {
+      background-color: #f5f5f5;
+    }
+    .card-stat {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 15px;
+    }
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+    .stat-label {
+      font-size: 0.9rem;
+      opacity: 0.9;
+    }
+    .form-label {
+      font-weight: 600;
+    }
+    .add-item-btn {
+      background: #28a745;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .remove-item-btn {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 0.25rem 0.5rem;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .item-row {
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 0.5rem;
+      background: #f8f9fa;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <!-- Breadcrumb -->
+  <nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Contratos de Combustível</li>
+    </ol>
+  </nav>
+
+  <!-- Mensagens de feedback -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="mb-3">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- Resumo Geral -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card card-stat text-center">
+        <div class="card-body">
+          <i class="fas fa-file-contract"></i>
+          <div class="stat-value">{{ total_contratos }}</div>
+          <div class="stat-label">Contratos Ativos</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card card-stat text-center">
+        <div class="card-body">
+          <i class="fas fa-dollar-sign"></i>
+          <div class="stat-value">{{ total_valor_contratado | currency }}</div>
+          <div class="stat-label">Valor Total Contratado</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card card-stat text-center">
+        <div class="card-body">
+          <i class="fas fa-chart-pie"></i>
+          <div class="stat-value">{{ total_valor_consumido | currency }}</div>
+          <div class="stat-label">Valor Consumido</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card card-stat text-center">
+        <div class="card-body">
+          <i class="fas fa-piggy-bank"></i>
+          <div class="stat-value">{{ total_valor_restante | currency }}</div>
+          <div class="stat-label">Saldo Restante</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- Tabela de Contratos Cadastrados -->
+  <div class="card card-custom">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+      <h5 class="mb-0"><i class="fas fa-list me-2"></i>Contratos Cadastrados</h5>
+      <div>
+        {% if session['usuario_tipo'] == 'admin' and setores %}
+        <form method="get" class="d-inline me-3">
+          <label for="setor" class="form-label me-2 mb-0">Filtrar por setor:</label>
+          <select name="setor" id="setor" class="form-select form-select-sm d-inline" onchange="this.form.submit()">
+            <option value="">Todos os setores</option>
+            {% for setor in setores %}
+              <option value="{{ setor }}" {% if request.args.get('setor') == setor %}selected{% endif %}>{{ setor }}</option>
+            {% endfor %}
+          </select>
+          {% for key, value in request.args.items() %}
+            {% if key != 'setor' %}
+              <input type="hidden" name="{{ key }}" value="{{ value }}">
+            {% endif %}
+          {% endfor %}
+        </form>
+        {% endif %}
+        <button class="btn btn-sm btn-primary me-2" data-bs-toggle="modal" data-bs-target="#modalCadastrarContrato">
+          <i class="fas fa-plus me-1"></i> Cadastrar Contrato
+        </button>
+        <a href="{{ url_for('relatorio_contratos') }}" class="btn btn-outline-primary btn-sm">
+          <i class="fas fa-print me-1"></i>Visualizar Relatório
+        </a>
+      </div>
+    </div>
+    <div class="card-body p-0">
+      {% if items %}
+        <div class="table-responsive table-responsive-custom">
+          <table class="table table-striped table-hover mb-0 table-custom">
+            <thead>
+              <tr>
+                <th>Nº/Ano</th>
+                <th>Fornecedor</th>
+                <th>Período</th>
+                <th>Itens</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for contrato in items %}
+              <tr>
+                <td><strong>{{ contrato.numero_contrato }}/{{ contrato.ano_contrato }}</strong></td>
+                <td>{{ contrato.fornecedor }}</td>
+                <td>
+                  {{ contrato.data_inicio_contrato.strftime('%d/%m/%Y') }}<br>
+                  até {{ contrato.data_fim_contrato.strftime('%d/%m/%Y') }}
+                </td>
+                <td>
+                  {% for item in contrato.itens %}
+                  <div>{{ item.tipo_combustivel }}: {{ item.quantidade | number(0) }} L</div>
+                  {% endfor %}
+                </td>
+                <td>
+                  {% if contrato.ativo %}
+                    <span class="badge bg-success">Ativo</span>
+                  {% else %}
+                    <span class="badge bg-secondary">Inativo</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <a href="{{ url_for('editar_contrato_combustivel', contrato_id=contrato.id) }}" class="btn btn-sm btn-outline-warning" title="Editar contrato">
+                    <i class="fas fa-edit"></i>
+                  </a>
+                  <a href="{{ url_for('listar_aditivos', contrato_id=contrato.id) }}" class="btn btn-sm btn-outline-primary" title="Aditivos do contrato">
+                    <i class="fas fa-plus-circle"></i>
+                  </a>
+                  <form method="POST" action="{{ url_for('excluir_contrato_combustivel', contrato_id=contrato.id) }}" style="display: inline;">
+                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Tem certeza que deseja desativar este contrato?')" title="Desativar contrato">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </form>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="text-center py-5">
+          <h5>Nenhum contrato cadastrado.</h5>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Modal para cadastrar contrato -->
+  <div class="modal fade" id="modalCadastrarContrato" tabindex="-1" aria-labelledby="modalCadastrarContratoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalCadastrarContratoLabel"><i class="fas fa-file-contract me-2"></i>Cadastrar Novo Contrato</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <form method="POST" novalidate>
+          <div class="modal-body">
+            {% if session['usuario_tipo'] == 'admin' and setores %}
+            <div class="mb-3">
+              <label class="form-label">Setor/Departamento <span class="text-danger">*</span></label>
+              <select name="setor" class="form-select" required>
+                <option value="">Selecione o setor</option>
+                {% for setor in setores %}
+                  <option value="{{ setor }}">{{ setor }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            {% endif %}
+
+            <div class="row mb-3">
+              <div class="col-md-3">
+                <label class="form-label">Número do Contrato <span class="text-danger">*</span></label>
+                <input type="text" name="numero_contrato" class="form-control" placeholder="Ex: 001/2025" required>
+                <div class="invalid-feedback">Campo obrigatório.</div>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Ano do Contrato <span class="text-danger">*</span></label>
+                <input type="number" name="ano_contrato" class="form-control" value="{{ agora.year }}" required>
+                <div class="invalid-feedback">Campo obrigatório.</div>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Data de Início <span class="text-danger">*</span></label>
+                <input type="date" name="data_inicio_contrato" class="form-control" required>
+                <div class="invalid-feedback">Campo obrigatório.</div>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Data de Fim <span class="text-danger">*</span></label>
+                <input type="date" name="data_fim_contrato" class="form-control" required>
+                <div class="invalid-feedback">Campo obrigatório.</div>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Fornecedor <span class="text-danger">*</span></label>
+              <input type="text" name="fornecedor" class="form-control" placeholder="Ex: Posto X" required>
+              <div class="invalid-feedback">Campo obrigatório.</div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Observações</label>
+              <textarea name="observacoes" class="form-control" rows="2" placeholder="Observações adicionais..."></textarea>
+            </div>
+
+            <!-- Itens do Contrato -->
+            <div id="itens-container">
+              <div class="item-row">
+                <div class="row">
+                  <div class="col-md-4">
+                    <label class="form-label">Tipo de Combustível</label>
+                    <select name="combustiveis_tipo[]" class="form-control" required>
+                      <option value="">Selecione</option>
+                      {% for tipo in tipos_combustivel %}
+                      <option value="{{ tipo }}">{{ tipo }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                  <div class="col-md-3">
+                    <label class="form-label">Quantidade (L)</label>
+                    <input type="number" name="combustiveis_quantidade[]" class="form-control" placeholder="Litros" required>
+                  </div>
+                  <div class="col-md-3">
+                    <label class="form-label">Valor Total (R$)</label>
+                    <input type="number" name="combustiveis_valor_total[]" class="form-control" step="0.01" placeholder="Valor" required>
+                  </div>
+                  <div class="col-md-2 d-flex align-items-end">
+                    <button type="button" class="remove-item-btn" onclick="removerItem(this)" title="Remover item do contrato">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-3">
+              <button type="button" class="add-item-btn" onclick="adicionarItem()" title="Adicionar outro tipo de combustível">
+                <i class="fas fa-plus"></i> Adicionar Outro Combustível
+              </button>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-save me-1"></i>Cadastrar Contrato
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    function adicionarItem() {
+      const container = document.getElementById('itens-container');
+      const newItem = document.createElement('div');
+      newItem.className = 'item-row';
+      newItem.innerHTML = `
+        <div class="row">
+          <div class="col-md-4">
+            <label class="form-label">Tipo de Combustível</label>
+            <select name="combustiveis_tipo[]" class="form-control" required>
+              <option value="">Selecione</option>
+              {% for tipo in tipos_combustivel %}
+              <option value="{{ tipo }}">{{ tipo }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Quantidade (L)</label>
+            <input type="number" name="combustiveis_quantidade[]" class="form-control" placeholder="Litros" required>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Valor Total (R$)</label>
+            <input type="number" name="combustiveis_valor_total[]" class="form-control" step="0.01" placeholder="Valor" required>
+          </div>
+          <div class="col-md-2 d-flex align-items-end">
+            <button type="button" class="remove-item-btn" onclick="removerItem(this)" title="Remover item do contrato">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      `;
+      container.appendChild(newItem);
+    }
+
+    function removerItem(button) {
+      const itemRow = button.closest('.item-row');
+      if (document.querySelectorAll('.item-row').length > 1) {
+        itemRow.remove();
+      } else {
+        alert('Você precisa ter pelo menos um item no contrato.');
+      }
+    }
+    // Validação visual dos campos obrigatórios
+    (function () {
+      'use strict';
+      var forms = document.querySelectorAll('form');
+      Array.prototype.slice.call(forms).forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+          if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+          form.classList.add('was-validated');
+        }, false);
+      });
+    })();
+  </script>
+{% endblock %}

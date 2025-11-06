@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RELATÓRIO DE CONTRATOS DE COMBUSTÍVEL</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 2cm;
+      color: #333;
+    }
+    .header {
+      text-align: center;
+      border-bottom: 2px solid #667eea;
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+    }
+    .header img {
+      height: 80px;
+      display: block;
+      margin: 0 auto 10px;
+    }
+    .header h1 {
+      font-size: 1.8rem;
+      color: #2c3e50;
+      margin: 0;
+      font-weight: 700;
+    }
+    .subtitle {
+      font-size: 0.95rem;
+      color: #555;
+    }
+    h2 {
+      font-size: 1.2rem;
+      color: #2c3e50;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 5px;
+      margin: 20px 0 10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      font-size: 0.9rem;
+    }
+    th, td {
+      padding: 8px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    th {
+      background-color: #667eea;
+      color: white;
+    }
+    .text-right {
+      text-align: right;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 30px;
+      padding-top: 10px;
+      border-top: 1px solid #ddd;
+      color: #777;
+      font-size: 0.9rem;
+    }
+    .detalhes-contrato {
+      margin: 15px 0;
+      padding: 10px;
+      background-color: #f8f9fa;
+      border-radius: 5px;
+      border-left: 4px solid #0b5ed7;
+    }
+
+    /* Botões profissionais */
+    .btn-group {
+      margin-bottom: 2rem;
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+    .btn-custom {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0.6rem 1.2rem;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      transition: all 0.3s ease;
+      border: none;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    .btn-voltar {
+      background: #6c757d;
+      color: white;
+    }
+    .btn-voltar:hover {
+      background: #5a6268;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+    }
+    .btn-imprimir {
+      background: #28a745;
+      color: white;
+    }
+    .btn-imprimir:hover {
+      background: #218838;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Esconde os botões na impressão */
+    @media print {
+      .btn-group {
+        display: none !important;
+      }
+      .detalhes-contrato {
+        border-left: none;
+        background-color: transparent;
+        padding: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Botões (visíveis apenas na tela) -->
+  <div class="btn-group">
+    <a href="{{ url_for('contratos_combustivel') }}" class="btn-custom btn-voltar">
+      <i class="fas fa-arrow-left"></i> Voltar
+    </a>
+    <button onclick="window.print()" class="btn-custom btn-imprimir">
+      <i class="fas fa-print"></i> Imprimir
+    </button>
+  </div>
+
+  <!-- Cabeçalho do relatório -->
+  <div class="header">
+    {% if url_for('static', filename='img/logo.png') %}
+    <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo">
+    {% endif %}
+    <h1>RELATÓRIO DE CONTRATOS DE COMBUSTÍVEL</h1>
+    <p class="subtitle">Data de Emissão: {{ agora.strftime('%d/%m/%Y') }} &nbsp;&nbsp; Hora: {{ agora.strftime('%H:%M') }}</p>
+  </div>
+
+  <p><strong>RESUMO GERAL</strong></p>
+  <p>Este relatório apresenta um panorama dos contratos ativos de combustível, incluindo valores totais contratados, consumidos e saldos restantes.</p>
+
+  <h2>TABELA DE VALORES FINANCEIROS</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Combustível</th>
+        <th class="text-right">Valor Contratado (R$)</th>
+        <th class="text-right">Valor Consumido (R$)</th>
+        <th class="text-right">Saldo Restante (R$)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if dados %}
+        {% for item in dados %}
+        <tr>
+          <td>{{ item.tipo_combustivel or 'N/A' }}</td>
+          <td class="text-right">{{ item.valor_total | currency if item.valor_total is not none else 'N/A' }}</td>
+          <td class="text-right">{{ item.valor_usado | currency if item.valor_usado is not none else 'N/A' }}</td>
+          <td class="text-right">{{ item.valor_restante | currency if item.valor_restante is not none else 'N/A' }}</td>
+        </tr>
+        {% endfor %}
+      {% else %}
+        <tr>
+          <td colspan="4" class="text-center">Nenhum dado disponível</td>
+        </tr>
+      {% endif %}
+    </tbody>
+  </table>
+
+  <h2>TABELA DE QUANTIDADES</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Combustível</th>
+        <th class="text-right">Quantidade Contratada (L)</th>
+        <th class="text-right">Quantidade Consumida (L)</th>
+        <th class="text-right">Saldo Restante (L)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if dados %}
+        {% for item in dados %}
+        <tr>
+          <td>{{ item.tipo_combustivel or 'N/A' }}</td>
+          <td class="text-right">{{ item.quantidade_contratada | number(0) if item.quantidade_contratada is not none else 'N/A' }}</td>
+          <td class="text-right">{{ item.quantidade_consumida | number(0) if item.quantidade_consumida is not none else 'N/A' }}</td>
+          <td class="text-right">{{ item.quantidade_restante | number(0) if item.quantidade_restante is not none else 'N/A' }}</td>
+        </tr>
+        {% endfor %}
+      {% else %}
+        <tr>
+          <td colspan="4" class="text-center">Nenhum dado disponível</td>
+        </tr>
+      {% endif %}
+    </tbody>
+  </table>
+
+  <h2>DETALHES ADICIONAIS DO CONTRATO</h2>
+  <div class="detalhes-contrato">
+    {% if is_admin %}
+      {% set setores_unicos = [] %}
+      {% for contrato in contratos %}
+        {% if contrato.setor and contrato.setor not in setores_unicos %}
+          {% set _ = setores_unicos.append(contrato.setor) %}
+        {% endif %}
+      {% endfor %}
+      <p><strong>Setor{% if setores_unicos|length > 1 %}es{% endif %}:</strong> {{ setores_unicos|join(', ') or '—' }}</p>
+    {% endif %}
+
+    {% set fornecedores_unicos = [] %}
+    {% for item in dados %}
+      {% if item.fornecedor and item.fornecedor not in fornecedores_unicos %}
+        {% set _ = fornecedores_unicos.append(item.fornecedor) %}
+      {% endif %}
+    {% endfor %}
+
+    {% set periodos_unicos = [] %}
+    {% for item in dados %}
+      {% set periodo = (item.data_inicio_contrato.strftime('%d/%m/%Y') if item.data_inicio_contrato else '—') + ' até ' + (item.data_fim_contrato.strftime('%d/%m/%Y') if item.data_fim_contrato else '—') %}
+      {% if periodo not in periodos_unicos %}
+        {% set _ = periodos_unicos.append(periodo) %}
+      {% endif %}
+    {% endfor %}
+
+    <p><strong>Fornecedor{% if fornecedores_unicos|length > 1 %}es{% endif %}:</strong>
+      {{ fornecedores_unicos|join(', ') or '—' }}
+    </p>
+
+    <p><strong>Período{% if periodos_unicos|length > 1 %}s{% endif %} de Vigência:</strong>
+      {{ periodos_unicos|join('; ') or '—' }}
+    </p>
+
+    <p><strong>Aditivos:</strong></p>
+    {% set has_aditivos = false %}
+    {% for contrato in contratos %}
+      {% if contrato.aditivos %}
+        {% set has_aditivos = true %}
+        <p><strong>Contrato {{ contrato.numero_contrato }}/{{ contrato.ano_contrato }}:</strong>
+          {% for aditivo in contrato.aditivos %}
+            {{ aditivo.tipo_aditivo }} ({{ aditivo.data_aditivo.strftime('%d/%m/%Y') if aditivo.data_aditivo else '—' }})
+            {% if aditivo.descricao %} - {{ aditivo.descricao }}{% endif %}
+            {% if not loop.last %}; {% endif %}
+          {% endfor %}
+        </p>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  <h2>STATUS DO CONTRATO</h2>
+  {% if dados %}
+    {% set alertas = [] %}
+    {% for item in dados %}
+      {% if item.percentual_consumido and item.percentual_consumido >= 80 %}
+        {% if alertas.append(1) %}{% endif %}
+      {% endif %}
+    {% endfor %}
+    {% if alertas %}
+      <p style="color: #721c24;">⚠️ <strong>Atenção:</strong> Um ou mais contratos estão com saldo crítico.</p>
+    {% else %}
+      <p style="color: #155724;">✅ <strong>Status do Saldo:</strong> Tudo certo! Nenhum contrato com saldo crítico foi identificado.</p>
+    {% endif %}
+  {% else %}
+    <p>Nenhum dado disponível para verificar o status.</p>
+  {% endif %}
+
+  <div class="footer">
+    <p>Sistema de Gestão de Combustível © {{ agora.year }}</p>
+    <p>Relatório gerado automaticamente.</p>
+  </div>
+</body>
+</html>

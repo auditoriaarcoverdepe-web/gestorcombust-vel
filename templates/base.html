@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Gestão de Combustível{% endblock %}</title>
+  
+  <!-- Bootstrap CSS via CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+    .sidebar {
+      min-height: 100vh;
+      background-color: #343a40;
+      padding-top: 1rem;
+      position: fixed;
+      width: 250px;
+      left: 0;
+      top: 0;
+      z-index: 1030;
+    }
+    .sidebar .nav-link {
+      color: #d1d5db;
+      margin-bottom: 0.5rem;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      transition: background-color 0.2s, color 0.2s;
+    }
+    .sidebar .nav-link:hover,
+    .sidebar .nav-link.active {
+      background-color: #495057;
+      color: #fff;
+    }
+    .sidebar .nav-link i {
+      margin-right: 8px;
+      width: 20px;
+      text-align: center;
+    }
+    .content {
+      margin-left: 250px;
+      padding: 2rem;
+    }
+    .submenu .nav-link {
+      padding-left: 2rem;
+      font-size: 0.95rem;
+    }
+    .dropdown-menu {
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      z-index: 1050;
+    }
+    .dropdown-item i {
+      margin-right: 8px;
+      width: 18px;
+      text-align: center;
+    }
+    .sidebar .dropdown-menu {
+      position: absolute;
+      left: 100%;
+      top: 0;
+      margin-left: 0.5rem;
+    }
+  </style>
+
+  {% block head_extra %}{% endblock %}
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="text-center mb-4">
+      <h5 class="text-white"><i class="fas fa-gas-pump"></i> Gestão de Combustível</h5>
+    </div>
+    <ul class="nav flex-column px-3">
+      <li class="nav-item">
+        <a class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
+          <i class="fas fa-home"></i> Dashboard
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link {% if request.endpoint == 'veiculos' %}active{% endif %}" href="{{ url_for('veiculos') }}">
+          <i class="fas fa-truck"></i> Veículos
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link {% if request.endpoint == 'motoristas' %}active{% endif %}" href="{{ url_for('motoristas') }}">
+          <i class="fas fa-user"></i> Motoristas
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link {% if request.endpoint == 'abastecimentos_view' %}active{% endif %}" href="{{ url_for('abastecimentos_view') }}">
+          <i class="fas fa-gas-pump"></i> Abastecimentos
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link {% if request.endpoint == 'contratos_combustivel' %}active{% endif %}" href="{{ url_for('contratos_combustivel') }}">
+          <i class="fas fa-file-contract"></i> Contratos
+        </a>
+      </li>
+
+      {% if session['usuario_tipo'] == 'admin' %}
+      <li class="nav-item">
+        <a class="nav-link {% if request.endpoint == 'usuarios' %}active{% endif %}" href="{{ url_for('usuarios') }}">
+          <i class="fas fa-users-cog"></i> Usuários
+        </a>
+      </li>
+      {% endif %}
+
+      <!-- Relatórios com submenu -->
+      <li class="nav-item">
+        <a href="#" class="nav-link" onclick="toggleSubmenu(event)">
+          <i class="fas fa-chart-bar"></i> Relatórios
+          <i class="fas fa-chevron-down float-end" style="margin-top: 4px;"></i>
+        </a>
+        <ul class="submenu" style="list-style: none; padding-left: 20px; margin-top: 5px; display: none;">
+          <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'relatorio_veiculos' %}active{% endif %}" href="{{ url_for('relatorio_veiculos') }}">
+              <i class="fas fa-truck"></i> Por Veículo
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'relatorio_motoristas' %}active{% endif %}" href="{{ url_for('relatorio_motoristas') }}">
+              <i class="fas fa-user"></i> Por Motorista
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'relatorio_abastecimentos' %}active{% endif %}" href="{{ url_for('relatorio_abastecimentos') }}">
+              <i class="fas fa-gas-pump"></i> Abastecimento
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <li class="nav-item mt-auto">
+        <a class="nav-link" href="{{ url_for('logout') }}">
+          <i class="fas fa-sign-out-alt"></i> Sair
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Conteúdo Principal -->
+  <div class="content">
+    {% if request.endpoint != 'dashboard' %}
+    <nav aria-label="breadcrumb" class="mb-4">
+      <ol class="breadcrumb">
+        {% block breadcrumb %}{% endblock %}
+      </ol>
+    </nav>
+    {% endif %}
+
+    <h2 class="mb-4">{% block page_title %}{% endblock %}</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </div>
+
+  <!-- Bootstrap JS Bundle (com Popper.js) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+  <!-- Script do submenu -->
+  <script>
+    function toggleSubmenu(event) {
+      event.preventDefault();
+      const submenu = event.currentTarget.nextElementSibling;
+      submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
+    }
+  </script>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

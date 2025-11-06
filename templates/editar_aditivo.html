@@ -1,0 +1,254 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+  <h3>{% if aditivo %}Editar{% else %}Novo{% endif %} Aditivo - Contrato {{ contrato.numero_contrato }}/{{ contrato.ano_contrato }}</h3>
+  
+  <form method="post">
+    <!-- Data do Aditivo -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-calendar me-2"></i>Data do Aditivo</h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <label class="form-label">Data do Aditivo *</label>
+            <input type="date" name="data_aditivo" class="form-control"
+                   value="{{ aditivo.data_aditivo.strftime('%Y-%m-%d') if aditivo and aditivo.data_aditivo else agora.strftime('%Y-%m-%d') }}"
+                   required>
+          </div>
+          <div class="col-md-6">
+            <div class="alert alert-info">
+              <small><strong>Vigência atual:</strong> {{ contrato.data_inicio_contrato.strftime('%d/%m/%Y') }} até {{ contrato.data_fim_contrato.strftime('%d/%m/%Y') }}</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Descrição do Aditivo -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>Descrição do Aditivo</h5>
+      </div>
+      <div class="card-body">
+        <label class="form-label">Descrição *</label>
+        <textarea name="descricao" class="form-control" rows="3" required>{{ aditivo.descricao if aditivo else '' }}</textarea>
+      </div>
+    </div>
+
+    <!-- Seletor de Modificações -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-edit me-2"></i>Selecione as Modificações</h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-4">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="modificar_prazo" name="modificar_prazo"
+                     {% if aditivo and "Prorrogação" in aditivo.tipo_aditivo %}checked{% endif %}>
+              <label class="form-check-label fw-bold" for="modificar_prazo">
+                <i class="fas fa-calendar-plus text-primary me-1"></i>Prorrogar Prazo
+              </label>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="modificar_valor" name="modificar_valor"
+                     {% if aditivo and "Reajuste de Valor" in aditivo.tipo_aditivo %}checked{% endif %}>
+              <label class="form-check-label fw-bold" for="modificar_valor">
+                <i class="fas fa-dollar-sign text-warning me-1"></i>Reajustar Valor
+              </label>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="modificar_quantidade" name="modificar_quantidade"
+                     {% if aditivo and "Aumento de Quantidade" in aditivo.tipo_aditivo %}checked{% endif %}>
+              <label class="form-check-label fw-bold" for="modificar_quantidade">
+                <i class="fas fa-gas-pump text-success me-1"></i>Aumentar Quantidade
+              </label>
+            </div>
+          </div>
+        </div>
+        
+        <div id="feedback-selecao" class="mt-3 alert alert-light" style="display: none;">
+          <small>Selecione pelo menos uma modificação acima</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Seção de Prorrogação (Dinâmica) -->
+    <div class="card mb-4" id="secao_prazo" style="display: none;">
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Prorrogação de Prazo</h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <label class="form-label">Nova Data de Término *</label>
+            <input type="date" name="nova_data_fim" class="form-control" 
+                   min="{{ contrato.data_fim_contrato.strftime('%Y-%m-%d') }}"
+                   value="{{ aditivo.nova_data_fim.strftime('%Y-%m-%d') if aditivo and aditivo.nova_data_fim else '' }}">
+            <small class="text-muted">Data atual: {{ contrato.data_fim_contrato.strftime('%d/%m/%Y') }}</small>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Dias Adicionais</label>
+            <input type="number" id="dias_adicionais" name="dias_adicionais" class="form-control bg-light" readonly>
+            <small class="text-muted">Calculado automaticamente</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Seção de Reajuste de Valor (Dinâmica) -->
+    <div class="card mb-4" id="secao_valor" style="display: none;">
+      <div class="card-header bg-warning text-dark">
+        <h5 class="mb-0"><i class="fas fa-dollar-sign me-2"></i>Reajuste de Valor</h5>
+      </div>
+      <div class="card-body">
+        <div class="row mb-3">
+          <div class="col-md-4">
+            <label class="form-label">Valor Total Atual</label>
+            <input type="text" class="form-control bg-light" value="{{ contrato.valor_total|currency }}" readonly>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Novo Valor Total *</label>
+            <input type="number" step="0.01" name="novo_valor_total" class="form-control" 
+                   value="{{ aditivo.novo_valor_total if aditivo else '' }}">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Variação</label>
+            <input type="text" class="form-control bg-light" readonly>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Seção de Aumento de Quantidade (Dinâmica) -->
+    <div class="card mb-4" id="secao_quantidade" style="display: none;">
+      <div class="card-header bg-success text-white">
+        <h5 class="mb-0"><i class="fas fa-gas-pump me-2"></i>Aumento de Quantidade</h5>
+      </div>
+      <div class="card-body">
+        <div class="row mb-3">
+          <div class="col-md-4">
+            <label class="form-label">Quantidade Total Atual</label>
+            <input type="text" class="form-control bg-light" value="{{ contrato.quantidade_total|number(0) }} L" readonly>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Nova Quantidade Total *</label>
+            <input type="number" step="0.01" name="nova_quantidade_total" class="form-control" 
+                   value="{{ aditivo.nova_quantidade_total if aditivo else '' }}">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Acréscimo</label>
+            <input type="text" class="form-control bg-light" readonly>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resumo das Alterações -->
+    <div class="card mb-4">
+      <div class="card-header bg-dark text-white">
+        <h5 class="mb-0"><i class="fas fa-list-check me-2"></i>Resumo do Aditivo</h5>
+      </div>
+      <div class="card-body">
+        <div id="resumo_alteracoes" class="alert alert-light">
+          <p class="mb-1"><strong>Contrato:</strong> {{ contrato.numero_contrato }}/{{ contrato.ano_contrato }}</p>
+          <p class="mb-1"><strong>Fornecedor:</strong> {{ contrato.fornecedor }}</p>
+          <p class="mb-0"><strong>Modificações:</strong> <span id="texto-modificacoes" class="text-muted">Nenhuma selecionada</span></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex gap-2">
+      <button type="submit" class="btn btn-success" id="btn-salvar">
+        <i class="fas fa-save me-1"></i>Salvar Aditivo
+      </button>
+      <a href="{{ url_for('listar_aditivos', contrato_id=contrato.id) }}" class="btn btn-secondary">
+        <i class="fas fa-times me-1"></i>Cancelar
+      </a>
+    </div>
+  </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const checkboxes = {
+    prazo: document.getElementById('modificar_prazo'),
+    valor: document.getElementById('modificar_valor'),
+    quantidade: document.getElementById('modificar_quantidade')
+  };
+
+  const secoes = {
+    prazo: document.getElementById('secao_prazo'),
+    valor: document.getElementById('secao_valor'),
+    quantidade: document.getElementById('secao_quantidade')
+  };
+
+  const btnSalvar = document.getElementById('btn-salvar');
+  const feedback = document.getElementById('feedback-selecao');
+
+  const dataFimAtual = new Date('{{ contrato.data_fim_contrato.strftime("%Y-%m-%d") }}');
+  const novaDataFimInput = document.querySelector('input[name="nova_data_fim"]');
+  const diasAdicionaisInput = document.getElementById('dias_adicionais');
+
+  // Função para calcular dias adicionais
+  function calcularDiasAdicionais() {
+    const novaDataValue = novaDataFimInput.value;
+    if (novaDataValue) {
+      const novaData = new Date(novaDataValue);
+      const diffTime = novaData - dataFimAtual;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      diasAdicionaisInput.value = diffDays > 0 ? diffDays : 0;
+    } else {
+      diasAdicionaisInput.value = '';
+    }
+  }
+
+  // Adicionar listener para calcular dias
+  if (novaDataFimInput) {
+    novaDataFimInput.addEventListener('input', calcularDiasAdicionais);
+    // Calcular inicialmente se houver valor
+    calcularDiasAdicionais();
+  }
+
+  // Controle das seções
+  Object.keys(checkboxes).forEach(key => {
+    checkboxes[key].addEventListener('change', function() {
+      secoes[key].style.display = this.checked ? 'block' : 'none';
+      atualizarInterface();
+    });
+
+    // Inicializar
+    if (checkboxes[key].checked) secoes[key].style.display = 'block';
+  });
+
+  function atualizarInterface() {
+    const modificacoes = [];
+    if (checkboxes.prazo.checked) modificacoes.push('Prorrogação');
+    if (checkboxes.valor.checked) modificacoes.push('Reajuste de Valor');
+    if (checkboxes.quantidade.checked) modificacoes.push('Aumento de Quantidade');
+
+    // Atualizar resumo
+    const textoModificacoes = document.getElementById('texto-modificacoes');
+    textoModificacoes.textContent = modificacoes.length > 0 ? modificacoes.join(', ') : 'Nenhuma';
+    textoModificacoes.className = modificacoes.length > 0 ? 'text-success fw-bold' : 'text-muted';
+
+    // Feedback e controle do botão
+    if (modificacoes.length === 0) {
+      feedback.style.display = 'block';
+      btnSalvar.disabled = true;
+    } else {
+      feedback.style.display = 'none';
+      btnSalvar.disabled = false;
+    }
+  }
+
+  atualizarInterface();
+});
+</script>
+{% endblock %}

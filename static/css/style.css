@@ -1,0 +1,540 @@
+/* ==============================
+   Variáveis de cor e tipografia
+   ============================== */
+:root {
+    --brand-color: #0b5ed7;        /* Azul institucional */
+    --brand-dark: #094ba7;
+    --text-color: #222;
+    --muted-color: #6c757d;
+    --background-color: #f7f9fc;
+    --border-color: #e6e9ee;
+    --table-header-bg: #f0f3f8;
+    --danger-color: #dc3545;
+    --success-color: #198754;
+    --warning-color: #ffc107;
+    --info-color: #0dcaf0;
+    --font-family: "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* ==============================
+   Reset e base
+   ============================== */
+html, body {
+    height: 100%;
+    margin: 0;
+    font-family: var(--font-family);
+    background: var(--background-color);
+    color: var(--text-color);
+}
+
+/* ==============================
+   Cabeçalho
+   ============================== */
+.app-header {
+    background: #fff;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.app-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 600;
+    color: var(--brand-color);
+}
+
+.app-brand img {
+    height: 40px;
+    width: auto;
+}
+
+.app-title {
+    font-size: 1.05rem;
+}
+
+.app-subtitle {
+    font-size: 0.9rem;
+    color: var(--muted-color);
+}
+
+/* ==============================
+   Layout geral
+   ============================== */
+.container {
+    max-width: 1100px;
+    margin: 22px auto;
+    padding: 0 16px;
+}
+
+.layout {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.main {
+    flex: 1;
+}
+
+footer.app-footer {
+    margin-top: 28px;
+    padding: 12px 16px;
+    text-align: center;
+    color: var(--muted-color);
+    font-size: 0.9rem;
+}
+
+/* ==============================
+   Navegação lateral
+   ============================== */
+.sidebar {
+    width: 220px;
+    background: #fff;
+    padding: 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.nav-link {
+    display: block;
+    padding: 8px 10px;
+    color: var(--brand-dark);
+    text-decoration: none;
+    border-radius: 6px;
+    margin-bottom: 6px;
+    transition: background 0.2s;
+}
+
+.nav-link:hover {
+    background: #f0f6ff;
+}
+
+/* ==============================
+   Formulários
+   ============================== */
+.form-container {
+    background: #fff;
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    margin-bottom: 18px;
+}
+
+.form-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.form-group {
+    flex: 1;
+    min-width: 180px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+input, select, textarea {
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 0.95rem;
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--brand-color);
+    box-shadow: 0 0 0 2px rgba(11, 94, 215, 0.1);
+}
+
+/* ==============================
+   Tabelas
+   ============================== */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border: 1px solid var(--border-color);
+}
+
+.data-table th {
+    background: var(--table-header-bg);
+    font-weight: 600;
+}
+
+.data-table th, .data-table td {
+    padding: 10px;
+    border-bottom: 1px solid #f1f3f6;
+    text-align: left;
+}
+
+/* ==============================
+   Botões
+   ============================== */
+.btn-primary {
+    background: var(--brand-color);
+    color: #fff;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-primary:hover {
+    background: var(--brand-dark);
+}
+
+.btn-danger {
+    background: var(--danger-color);
+    color: #fff;
+}
+
+.btn-success {
+    background: var(--success-color);
+    color: #fff;
+}
+
+.btn-warning {
+    background: var(--warning-color);
+    color: #212529;
+}
+
+.btn-info {
+    background: var(--info-color);
+    color: #212529;
+}
+
+/* ==============================
+   Página de login
+   ============================== */
+.login-page {
+    max-width: 420px;
+    margin: 40px auto;
+}
+
+.login-logo {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.login-logo img {
+    height: 56px;
+}
+
+.login-page h2 {
+    text-align: center;
+    margin-top: 10px;
+}
+
+.login-page p {
+    text-align: center;
+    color: var(--muted-color);
+    margin: 6px 0 16px;
+}
+
+/* ==============================
+   Relatórios - Estilos adicionados
+   ============================== */
+
+/* Cabeçalho do relatório */
+.relatorio-header {
+    background: #fff;
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    margin-bottom: 18px;
+}
+
+.relatorio-titulo {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--brand-color);
+    margin: 0 0 8px 0;
+}
+
+.relatorio-subtitulo {
+    font-size: 0.95rem;
+    color: var(--muted-color);
+    margin: 0 0 12px 0;
+}
+
+.relatorio-info {
+    font-size: 0.85rem;
+    color: var(--muted-color);
+    margin: 2px 0;
+}
+
+/* Ações do relatório */
+.relatorio-actions {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+}
+
+.btn-export-pdf {
+    background: var(--brand-color);
+    color: #fff;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.2s;
+}
+
+.btn-export-pdf:hover {
+    background: var(--brand-dark);
+}
+
+/* Cards de métricas */
+.metrica-card {
+    background: #fff;
+    padding: 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    margin-bottom: 14px;
+}
+
+.metrica-label {
+    font-size: 0.9rem;
+    color: var(--muted-color);
+    margin-bottom: 4px;
+}
+
+.metrica-value {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+/* Veículo Card */
+.veiculo-card {
+    background: #fff;
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    margin-bottom: 16px;
+}
+
+.veiculo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.veiculo-placa {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.veiculo-tipo {
+    font-size: 0.9rem;
+    color: var(--muted-color);
+}
+
+.veiculo-combustivel {
+    background: var(--table-header-bg);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+/* Lista de abastecimentos */
+.abastecimentos-lista {
+    margin-top: 12px;
+}
+
+.abastecimentos-lista h6 {
+    font-size: 0.95rem;
+    color: var(--muted-color);
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+
+.abastecimento-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid #f1f3f6;
+}
+
+.abastecimento-item:last-child {
+    border-bottom: none;
+}
+
+.abastecimento-data {
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.abastecimento-litros {
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+.abastecimento-valor {
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+/* Motorista Card */
+.motorista-card {
+    background: #fff;
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    margin-bottom: 16px;
+}
+
+.motorista-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.motorista-nome {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.motorista-documento {
+    font-size: 0.9rem;
+    color: var(--muted-color);
+}
+
+/* Veículos mais utilizados */
+.veiculos-lista {
+    margin-top: 12px;
+}
+
+.veiculo-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid #f1f3f6;
+}
+
+.veiculo-item:last-child {
+    border-bottom: none;
+}
+
+.veiculo-placa {
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.veiculo-litros {
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+.veiculo-valor {
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+/* Observações */
+.motorista-observacoes {
+    margin-top: 12px;
+    padding: 10px;
+    background: var(--table-header-bg);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    border: 1px solid var(--border-color);
+}
+
+/* Filtros aplicados */
+.filter-badges {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 10px 0;
+}
+
+.badge-filter {
+    background: var(--table-header-bg);
+    color: var(--text-color);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.badge-filter .remove {
+    color: var(--danger-color);
+    cursor: pointer;
+    font-weight: bold;
+    margin-left: 6px;
+}
+
+/* Submenu de relatórios */
+.submenu {
+    list-style: none;
+    padding-left: 20px;
+    margin-top: 5px;
+}
+
+.submenu li a {
+    padding: 8px 15px;
+    display: block;
+    color: var(--brand-dark);
+    border-radius: 6px;
+    margin: 2px 5px;
+    font-size: 0.95rem;
+}
+
+.submenu li a:hover,
+.submenu li a.active {
+    background: var(--brand-color);
+    color: white;
+}
+
+/* ==============================
+   Responsividade
+   ============================== */
+@media (max-width: 880px) {
+    .layout {
+        flex-direction: column;
+    }
+    .sidebar {
+        width: 100%;
+        order: 2;
+    }
+    
+    /* Ajustes para relatórios em mobile */
+    .relatorio-header {
+        padding: 12px;
+    }
+    
+    .relatorio-actions {
+        flex-direction: column;
+    }
+    
+    .form-row {
+        flex-direction: column;
+    }
+    
+    .metrica-card {
+        padding: 12px;
+    }
+}

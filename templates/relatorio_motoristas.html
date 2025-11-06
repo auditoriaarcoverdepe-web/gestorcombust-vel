@@ -1,0 +1,442 @@
+{% extends "base.html" %}
+
+{% block title %}Relatório por Motorista{% endblock %}
+{% block page_title %}Relatórios Motorista{% endblock %}
+
+{% block head_extra %}
+{{ super() }}
+<style>
+.relatorio-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    overflow: hidden;
+    margin-bottom: 30px;
+}
+.relatorio-header {
+    background: #f8f9fa;
+    padding: 20px;
+    border-bottom: 1px solid #e9ecef;
+}
+.relatorio-titulo {
+    color: #1f2937;
+    margin: 0;
+}
+.relatorio-subtitulo {
+    color: #6b7280;
+    margin: 5px 0 0 0;
+}
+.filter-badges {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.badge-filter {
+    background: #e3f2fd;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid #bbdefb;
+}
+.remove {
+    color: #d32f2f;
+    font-weight: bold;
+    cursor: pointer;
+    margin-left: 8px;
+}
+.relatorio-actions {
+    padding: 15px 20px;
+    background: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+    display: flex;
+    gap: 10px;
+}
+.relatorio-actions a, .relatorio-actions button {
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    min-width: 140px;
+    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.btn-export-pdf {
+    background-color: #007bff;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.btn-export-pdf:hover {
+    background-color: #0056b3;
+}
+.metrica-card {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 12px;
+    text-align: center;
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+}
+.metrica-label {
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin-bottom: 4px;
+}
+.metrica-value {
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: #1f2937;
+}
+.totais-gerais {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    border: 1px solid #dee2e6;
+    margin-top: 30px;
+}
+.motorista-card {
+    margin-bottom: 20px;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+}
+.motorista-header {
+    background: #f8f9fa;
+    padding: 15px;
+    border-bottom: 1px solid #dee2e6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.motorista-nome {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #1f2937;
+}
+.motorista-documento {
+    color: #6b7280;
+}
+/* Estilos para impressão */
+@media print {
+    .sidebar, .relatorio-actions, .breadcrumb, nav[aria-label="breadcrumb"] {
+        display: none !important;
+    }
+    body {
+        margin: 0;
+        padding: 20px;
+    }
+    .content {
+        margin-left: 0;
+        padding: 0;
+    }
+    .normal-content {
+        display: none !important;
+    }
+    .print-only {
+        display: block !important;
+    }
+    .relatorio-container {
+        box-shadow: none;
+        border: 1px solid #000;
+    }
+    .relatorio-header {
+        border-bottom: 2px solid #0b5ed7;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+    }
+    .relatorio-titulo {
+        color: #0b5ed7;
+        font-size: 24px;
+        margin: 10px 0;
+        font-weight: 600;
+    }
+    .relatorio-subtitulo {
+        color: #6c757d;
+        font-size: 16px;
+        margin: 5px 0;
+    }
+    .motorista-card {
+        border: 1px solid #000;
+        page-break-inside: avoid;
+    }
+    .motorista-header {
+        border-bottom: 1px solid #000;
+        margin-bottom: 10px;
+        padding: 10px;
+    }
+    .motorista-nome {
+        font-size: 18pt;
+        font-weight: bold;
+    }
+    .motorista-documento {
+        font-size: 10pt;
+        margin-top: 4px;
+    }
+    .metrica-card {
+        border: 1px solid #000;
+        border-radius: 8px;
+        padding: 12px;
+        margin: 10px;
+        page-break-inside: avoid;
+    }
+    .metrica-label {
+        font-size: 10pt;
+        color: #6c757d;
+        margin-bottom: 5px;
+    }
+    .metrica-value {
+        font-size: 16pt;
+        font-weight: bold;
+    }
+    .table {
+        font-size: 10pt;
+    }
+    .footer {
+        margin-top: 20px;
+        text-align: center;
+        font-size: 10pt;
+        color: #666;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="normal-content">
+<div class="container-fluid">
+    <div class="relatorio-container">
+        <!-- Cabeçalho -->
+        <div class="relatorio-header">
+            <h2 class="relatorio-titulo">Abasecimento por Motorista</h2>
+            <p class="relatorio-subtitulo">Detalhamento de consumo por motorista</p>
+            {% if session['usuario_tipo'] == 'admin' and setores %}
+            <form method="get" class="row g-2 align-items-center" style="margin-top: 10px;">
+                <div class="col-auto">
+                    <label for="setor" class="form-label mb-0">Filtrar por setor:</label>
+                </div>
+                <div class="col-auto">
+                    <select name="setor" id="setor" class="form-select form-select-sm" onchange="this.form.submit()">
+                        <option value="">Todos os setores</option>
+                        {% for setor in setores %}
+                            <option value="{{ setor }}" {% if request.args.get('setor') == setor %}selected{% endif %}>{{ setor }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% for key, value in request.args.items() %}
+                    {% if key != 'setor' %}
+                        <input type="hidden" name="{{ key }}" value="{{ value }}">
+                    {% endif %}
+                {% endfor %}
+            </form>
+            {% endif %}
+            {% if filtros_aplicados %}
+                <div class="filter-badges">
+                    {% for chave, valor in filtros_aplicados.items() if valor %}
+                        <div class="badge-filter">
+                            <strong>{{ {
+                                'data_inicio': 'Data Início',
+                                'data_fim': 'Data Fim',
+                                'motorista_id': 'Motorista',
+                                'combustivel': 'Combustível',
+                                'setor': 'Setor'
+                            }.get(chave, chave.replace('_', ' ').title()) }}:</strong>
+                            {{ valor }}
+                            <a href="#" class="remove" onclick="removeFilter('{{ chave }}'); return false;">×</a>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Ações -->
+        <div class="relatorio-actions">
+            <a href="{{ url_for('export_csv_relatorio_motoristas') }}" class="btn-export-pdf">
+                <i class="fas fa-file-csv"></i> Exportar CSV
+            </a>
+            <a href="{{ url_for('export_pdf_relatorio_motoristas') }}" class="btn-export-pdf">
+                <i class="fas fa-file-pdf"></i> Exportar PDF
+            </a>
+            <button onclick="window.print()" class="btn-export-pdf">
+                <i class="fas fa-print"></i> Imprimir Relatório
+            </button>
+            {% if filtros_aplicados %}
+                <a href="{{ url_for('relatorio_motoristas') }}" class="btn btn-outline-danger btn-sm">
+                    <i class="fas fa-times"></i> Limpar Filtros
+                </a>
+            {% endif %}
+        </div>
+
+        <!-- Conteúdo -->
+        <div class="px-3 pb-3">
+            {% if dados_motoristas %}
+                {% set total_litros_geral = namespace(value=0) %}
+                {% set total_valor_geral = namespace(value=0) %}
+
+                {% for motorista, dados in dados_motoristas.items() %}
+                    <div class="motorista-card">
+                        <div class="motorista-header">
+                            <div>
+                                <div class="motorista-nome">{{ motorista.nome_completo }}</div>
+                                <div class="motorista-documento">Documento: {{ motorista.documento }}</div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="metrica-card">
+                                    <div class="metrica-label">Total de Litros</div>
+                                    <div class="metrica-value">{{ dados.total_litros|litros }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="metrica-card">
+                                    <div class="metrica-label">Valor Total</div>
+                                    <div class="metrica-value">{{ dados.total_valor|currency }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="metrica-card">
+                                    <div class="metrica-label">Média por Abastecimento</div>
+                                    <div class="metrica-value">{{ dados.media_litros|litros }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="metrica-card">
+                                    <div class="metrica-label">Abastecimentos</div>
+                                    <div class="metrica-value">{{ dados.total_abastecimentos }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <h6>Veículos Mais Utilizados</h6>
+                            <table class="table table-borderless">
+                                <tbody>
+                                    {% for veiculo, info in dados.veiculos_mais_utilizados.items() %}
+                                        <tr>
+                                            <td>{{ veiculo.placa }} ({{ veiculo.tipo }})</td>
+                                            <td class="text-end">{{ info.litros|litros }}</td>
+                                            <td class="text-end">{{ info.valor|currency }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="alert alert-info">Nenhum motorista encontrado.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+</div>
+
+<div class="print-only" style="display: none;">
+    <!-- Conteúdo para impressão -->
+    <div class="relatorio-container">
+        <div class="relatorio-header">
+            <h2 class="relatorio-titulo">Relatório por Motorista</h2>
+            <p class="relatorio-subtitulo">Detalhamento de consumo por motorista</p>
+            
+            <!-- Informações de Geração -->
+            <div class="relatorio-info">
+                <strong>Data de Geração:</strong> {{ agora.strftime('%d/%m/%Y %H:%M') }}
+            </div>
+            {% if filtros_aplicados %}
+                <div class="relatorio-info">
+                    <strong>Filtros Aplicados:</strong>
+                    {% for chave, valor in filtros_aplicados.items() if valor %}
+                        {{ {
+                          'data_inicio': 'Data Início',
+                          'data_fim': 'Data Fim',
+                          'motorista_id': 'Motorista',
+                          'combustivel': 'Combustível'
+                        }.get(chave, chave.replace('_', ' ').title()) }}: {{ valor }}{% if not loop.last %}, {% endif %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Dados por Motorista -->
+        {% if dados_motoristas %}
+            {% for motorista, dados in dados_motoristas.items() %}
+                <div class="motorista-card">
+                    <div class="motorista-header">
+                        <div>
+                            <div class="motorista-nome">{{ motorista.nome_completo }}</div>
+                            <div class="motorista-documento">Documento: {{ motorista.documento }}</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Métricas do Motorista -->
+                    <div style="display: flex; flex-wrap: wrap;">
+                        <div class="metrica-card" style="flex: 1; min-width: 200px;">
+                            <div class="metrica-label">Total de Litros</div>
+                            <div class="metrica-value">{{ "%.1f"|format(dados.total_litros) }} L</div>
+                        </div>
+                        <div class="metrica-card" style="flex: 1; min-width: 200px;">
+                            <div class="metrica-label">Valor Total</div>
+                            <div class="metrica-value">R$ {{ "%.2f"|format(dados.total_valor) }}</div>
+                        </div>
+                        <div class="metrica-card" style="flex: 1; min-width: 200px;">
+                            <div class="metrica-label">Média por Abastecimento</div>
+                            <div class="metrica-value">{{ "%.1f"|format(dados.media_litros) }} L</div>
+                        </div>
+                        <div class="metrica-card" style="flex: 1; min-width: 200px;">
+                            <div class="metrica-label">Abastecimentos</div>
+                            <div class="metrica-value">{{ dados.total_abastecimentos }}</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Lista de Veículos -->
+                    <div class="abastecimentos-lista">
+                        <h6>Veículos Mais Utilizados</h6>
+                        <div class="abastecimentos-lista">
+                            {% for veiculo, info in dados.veiculos_mais_utilizados.items() %}
+                                <div class="abastecimento-item">
+                                    <span class="abastecimento-data">{{ veiculo.placa }} ({{ veiculo.tipo }})</span>
+                                    <span class="abastecimento-litros">{{ "%.1f"|format(info.litros) }} L</span>
+                                    <span class="abastecimento-valor">R$ {{ "%.2f"|format(info.valor) }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="text-center py-5">
+                <h5>Nenhum registro encontrado para os critérios selecionados.</h5>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Rodapé para impressão -->
+    <div class="footer">
+        <p>Relatório gerado automaticamente pelo Sistema de Gestão de Combustível</p>
+        <p>Página <span class="page"></span></p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+function removeFilter(chave) {
+    const url = new URL(window.location.href);
+    url.searchParams.delete(chave);
+    window.location.href = url.toString();
+}
+</script>
+{% endblock %}
